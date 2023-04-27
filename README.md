@@ -9,7 +9,7 @@ In a terminal run this to get the gin server started
 > go run .  
 
 In a seperate terminal run this to start the website  
-> cd ../sveltekit  
+> cd sveltekit  
 > npm install  
 > npm run dev  
 
