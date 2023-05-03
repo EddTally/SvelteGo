@@ -1,11 +1,15 @@
 package main
 
 import (
+	"fmt"
+	"io"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
+	"time"
 
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+
+	"os"
 )
 
 // https://go.dev/doc/tutorial/web-service-gin
@@ -25,25 +29,51 @@ var albums = []album{
 }
 
 func main() {
-	router := gin.Default()
+
+	 // Logging to a file.
+  f, _ := os.Create("gin.log")
+  gin.DefaultWriter = io.MultiWriter(f)
+  // Use the following code if you need to write the logs to file and console at the same time.
+  gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
+
+  router := gin.New()
+  // LoggerWithFormatter middleware will write the logs to gin.DefaultWriter
+  // By default gin.DefaultWriter = os.Stdout
+  router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+
+    // your custom format
+    return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+        param.ClientIP,
+        param.TimeStamp.Format(time.RFC1123),
+        param.Method,
+        param.Path,
+        param.Request.Proto,
+        param.StatusCode,
+        param.Latency,
+        param.Request.UserAgent(),
+        param.ErrorMessage,
+    )
+  }))
+  router.Use(gin.Recovery())
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"http://localhost:5173"},
+		AllowMethods: []string{"PUT", "GET", "OPTIONS"},
+		AllowHeaders: []string{"Origin", "Content-Type", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"},
+		ExposeHeaders: []string{"Content-Length", "Content-Type", "Accept", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"},
+		AllowCredentials: true,
+		MaxAge: 12 * time.Hour,
+	}))
+
+//	router := gin.Default()
+	router.GET("/", func(context *gin.Context) {
+		context.JSON(http.StatusOK, gin.H{"Hello": "World"})
+	})
 	router.GET("/albums", getAlbums)
 	router.GET("/albums/:id", getAlbumByID)
 	router.POST("/albums", postAlbums)
 
-	// router.Use(cors.New(cors.Config{
-	// 	AllowOrigins: []string{"http://localhost:5173"},
-	// 	AllowMethods: []string{"PUT", "GET"},
-	// 	AllowHeaders: []string{"Origin"},
-	// 	ExposeHeaders: []string{"Content-Length", "Content-Type",
-	// 		"Accept", "Access-Control-Allow-Origin",
-	// 		"Access-Control-Allow-Headers"},
-	// 	AllowCredentials: true,
-	// 	AllowOriginFunc: func(origin string) bool {
-	// 		return origin == "https://github.com"
-	// 	},
-	// 	MaxAge: 12 * time.Hour,
-	// }))
-	router.Use(cors.Default())
+	//router.Use(cors.Default())
 	router.Run("localhost:8080")
 }
 

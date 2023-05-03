@@ -27,6 +27,17 @@ class ApiClient extends HttpClient {
             get: () => this.get("/albums")
         }
     }
+    /**
+		 * get getAlbums will return all albums as a list.
+		 * 
+		 */
+    get getDefault() {
+
+        return {
+            get: () => this.get("/")
+        }
+    }
+    
 
 		/**
 		 * get getAlbum will take the albumId and return that album.

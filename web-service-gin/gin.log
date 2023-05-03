@@ -1,0 +1,26 @@
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /                         --> main.main.func2 (4 handlers)
+[GIN-debug] GET    /albums                   --> main.getAlbums (4 handlers)
+[GIN-debug] GET    /albums/:id               --> main.getAlbumByID (4 handlers)
+[GIN-debug] POST   /albums                   --> main.postAlbums (4 handlers)
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on localhost:8080
+127.0.0.1 - [Wed, 03 May 2023 12:46:33 BST] "GET /albums HTTP/1.1 200 447.875µs "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" "
+127.0.0.1 - [Wed, 03 May 2023 12:46:40 BST] "GET / HTTP/1.1 200 826.209µs "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" Error #01: json: unsupported type: func() (io.ReadCloser, error)
+"
+127.0.0.1 - [Wed, 03 May 2023 12:53:11 BST] "GET /albums HTTP/1.1 200 93.583µs "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" "
+127.0.0.1 - [Wed, 03 May 2023 12:53:38 BST] "GET /albums HTTP/1.1 200 51.709µs "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" "
+127.0.0.1 - [Wed, 03 May 2023 12:57:52 BST] "GET /albums HTTP/1.1 200 144.375µs "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" "
+127.0.0.1 - [Wed, 03 May 2023 12:58:26 BST] "GET /albums HTTP/1.1 200 47.25µs "curl/7.87.0" "
+127.0.0.1 - [Wed, 03 May 2023 13:02:02 BST] "GET /albums HTTP/1.1 200 88.291µs "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" "
+127.0.0.1 - [Wed, 03 May 2023 13:02:37 BST] "GET /albums HTTP/1.1 200 78.792µs "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" "
+127.0.0.1 - [Wed, 03 May 2023 13:03:22 BST] "GET /albums HTTP/1.1 200 96.834µs "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" "
+127.0.0.1 - [Wed, 03 May 2023 13:06:47 BST] "GET /albums HTTP/1.1 200 64.125µs "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" "
+127.0.0.1 - [Wed, 03 May 2023 13:07:40 BST] "GET /albums HTTP/1.1 200 282.459µs "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" "
+127.0.0.1 - [Wed, 03 May 2023 13:08:55 BST] "GET /albums HTTP/1.1 200 63.833µs "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" "
+127.0.0.1 - [Wed, 03 May 2023 13:09:27 BST] "GET /albums HTTP/1.1 200 130.291µs "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" "
+127.0.0.1 - [Wed, 03 May 2023 13:09:39 BST] "GET /albums HTTP/1.1 200 67.083µs "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" "
