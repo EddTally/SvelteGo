@@ -51,6 +51,20 @@ class ApiClient extends HttpClient {
 				get: (albumId: Number) => this.get(`/album/${albumId}`)
 			}
 		}
+
+		/**
+		 * get addAlbum will take the JSON stringified album and add it to the backend database.
+		 * 
+		 * 
+		 * ## Parameters
+		 * 
+		 * - album - The album we want to add..
+		 */
+		get addAlbum(){
+			return {
+				post: (album: Object) => this.post(`/albums`, album)
+			}
+		}
 }
 export default ApiClient
 

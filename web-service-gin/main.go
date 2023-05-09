@@ -30,42 +30,28 @@ var albums = []album{
 
 func main() {
 
-	 // Logging to a file.
-  f, _ := os.Create("gin.log")
-  gin.DefaultWriter = io.MultiWriter(f)
-  // Use the following code if you need to write the logs to file and console at the same time.
-  gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
+	// Logging to a file.
+	f, _ := os.Create("gin.log")
+	gin.DefaultWriter = io.MultiWriter(f)
+	// Use the following code if you need to write the logs to file and console at the same time.
+	gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
 
-  router := gin.New()
-  // LoggerWithFormatter middleware will write the logs to gin.DefaultWriter
-  // By default gin.DefaultWriter = os.Stdout
-  router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-
-    // your custom format
-    return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
-        param.ClientIP,
-        param.TimeStamp.Format(time.RFC1123),
-        param.Method,
-        param.Path,
-        param.Request.Proto,
-        param.StatusCode,
-        param.Latency,
-        param.Request.UserAgent(),
-        param.ErrorMessage,
-    )
-  }))
-  router.Use(gin.Recovery())
+	router := gin.New()
+	// LoggerWithFormatter middleware will write the logs to gin.DefaultWriter
+	// By default gin.DefaultWriter = os.Stdout
+	router.Use(gin.LoggerWithFormatter(logFormatter))
+	router.Use(gin.Recovery())
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:5173"},
-		AllowMethods: []string{"PUT", "GET", "OPTIONS"},
-		AllowHeaders: []string{"Origin", "Content-Type", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"},
-		ExposeHeaders: []string{"Content-Length", "Content-Type", "Accept", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"},
+		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowMethods:     []string{"PUT", "GET", "OPTIONS", "POST"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"},
+		ExposeHeaders:    []string{"Content-Length", "Content-Type", "Accept", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"},
 		AllowCredentials: true,
-		MaxAge: 12 * time.Hour,
+		MaxAge:           12 * time.Hour,
 	}))
 
-//	router := gin.Default()
+	//	router := gin.Default()
 	router.GET("/", func(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{"Hello": "World"})
 	})
@@ -92,6 +78,9 @@ func postAlbums(c *gin.Context) {
 		return
 	}
 
+	// Checking that the title doesn't already exist
+	fmt.Println(newAlbum)
+
 	// Add the new album to the slice.
 	albums = append(albums, newAlbum)
 	c.IndentedJSON(http.StatusCreated, newAlbum)
@@ -111,4 +100,22 @@ func getAlbumByID(c *gin.Context) {
 		}
 	}
 	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
+}
+
+// Custom formatter to be passed in as m iddleware
+func logFormatter(param gin.LogFormatterParams) string {
+
+	// your custom format
+	return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n Request: %v\n",
+		param.ClientIP,
+		param.TimeStamp.Format(time.RFC1123),
+		param.Method,
+		param.Path,
+		param.Request.Proto,
+		param.StatusCode,
+		param.Latency,
+		param.Request.UserAgent(),
+		param.ErrorMessage,
+		param.Request,
+	)
 }

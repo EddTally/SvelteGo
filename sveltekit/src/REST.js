@@ -54,9 +54,7 @@ class HttpClient {
     post(endpoint, body, options={}) {
         return this._fetchAPI(endpoint, {
             ...options,
-            body: new URLSearchParams(
-                body ? JSON.stringify(body) : undefined
-            ).toString(),
+						body: JSON.stringify(body),
             method: "POST"
         })
     }
