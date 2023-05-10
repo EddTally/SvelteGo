@@ -1,8 +1,11 @@
 package main
 
 import (
+	"example/web-service-gin/models"
+	"example/web-service-gin/storage"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -11,6 +14,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 // https://go.dev/doc/tutorial/web-service-gin
@@ -30,6 +34,34 @@ var albums = []album{
 }
 
 func main() {
+
+	// Loading env variables
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	config := &storage.Config{
+		Host:     os.Getenv("DB_HOST"),
+		Port:     os.Getenv("DB_PORT"),
+		Password: os.Getenv("DB_PASS"),
+		User:     os.Getenv("DB_USER"),
+		SSLMode:  os.Getenv("DB_SSLMODE"),
+		DBName:   os.Getenv("DB_NAME"),
+	}
+
+	db, err := storage.NewConnection(config)
+	if err != nil {
+		log.Fatal("could not load the database")
+	}
+	err = models.MigrateAlbums(db)
+	if err != nil {
+		log.Fatal("could not migrate db")
+	}
+
+	//albumModel := &models.Albums{}
+	album1 := db.Where("id = ?", 2).First(&models.Albums{})
+	fmt.Println("first album", album1)
 
 	// Logging to a file.
 	f, _ := os.Create("gin.log")
@@ -94,8 +126,6 @@ func postAlbums(c *gin.Context) {
 func getAlbumByID(c *gin.Context) {
 	id := c.Param("id")
 
-	fmt.Printf("%v\n", albums)
-	fmt.Println("The id we got", id)
 	// Loop over the list of albums, looking for
 	// an album whose ID value matches the parameter.
 	for _, a := range albums {
