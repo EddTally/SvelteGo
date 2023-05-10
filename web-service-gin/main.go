@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"time"
 
+	"os"
+	"strconv"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-
-	"os"
 )
 
 // https://go.dev/doc/tutorial/web-service-gin
@@ -80,6 +81,8 @@ func postAlbums(c *gin.Context) {
 
 	// Checking that the title doesn't already exist
 	fmt.Println(newAlbum)
+	// Adding id
+	newAlbum.ID = strconv.Itoa(len(albums) + 1)
 
 	// Add the new album to the slice.
 	albums = append(albums, newAlbum)
@@ -91,6 +94,8 @@ func postAlbums(c *gin.Context) {
 func getAlbumByID(c *gin.Context) {
 	id := c.Param("id")
 
+	fmt.Printf("%v\n", albums)
+	fmt.Println("The id we got", id)
 	// Loop over the list of albums, looking for
 	// an album whose ID value matches the parameter.
 	for _, a := range albums {
