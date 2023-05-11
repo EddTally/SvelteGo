@@ -8,8 +8,9 @@ const apiClient = new ApiClient();
 export async function load(){
 	await apiClient.getAlbums.get()
       .then((res) => res ? res.json() : albums)
-      .then((data) => { 
-        albums = data
+      .then((response) => { 
+				console.log(response)
+        albums = response.data
 			})
 			 .catch((err) => {
         console.error(err);

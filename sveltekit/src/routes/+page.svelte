@@ -7,19 +7,22 @@
 	// This is the data that comes from the load function in +page.server.js
 	export let data;
 
-	let newAlbum = {id: "0", title: "", artist: "", price: 0}
+	// New album has no id, remember that
+	let newAlbum = {title: "", artist: "", price: 0}
 	let chosenAlbum = {id: "0", title: "", artist: "", price: 0}
 	let getAlbumByIDUsed = false
 	let albumMessage = "Album Found"
+	let createAlbumMessage = ""
 	let chosenAlbumID = 0
 
 	async function addAlbum(){
 		await apiClient.addAlbum
 		.post(newAlbum)
     .then((res) => res ? res.json() : false)
-		.then(success => {
-			if(success){
-				data.albums = [...data.albums, newAlbum]
+		.then(res => {
+			if(res){
+				data.albums = [...data.albums, res.data]
+				createAlbumMessage = res.message
 			}
 		})
 		.catch((err) => {
@@ -31,9 +34,9 @@
 		await apiClient.getAlbumByID
 		.get(chosenAlbumID)
     .then((res) => res?.json())
-		.then(album => {
-			console.log(album)
-			chosenAlbum = album
+		.then(res => {
+			console.log(res.data)
+			chosenAlbum = res.data
 			albumMessage = "Album Found"
 			getAlbumByIDUsed = true
 		})
@@ -102,6 +105,9 @@
 			<label>
 				<button class="button" on:click={addAlbum}> Add Album </button>
 			</label>
+			{#if createAlbumMessage.length > 0}
+				<p>{createAlbumMessage} </p>
+			{/if}
 		</form>
 
 		<form>

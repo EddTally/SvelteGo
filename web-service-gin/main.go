@@ -10,27 +10,28 @@ import (
 	"time"
 
 	"os"
-	"strconv"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 )
+
+// Alot of the code is based upon this tutorial:
+// https://github.com/AkhilSharma90/go-postgres-gorm/blob/master/main.go
 
 // https://go.dev/doc/tutorial/web-service-gin
 // album represents data about a record album.
-type album struct {
-	ID     string  `json:"id"`
-	Title  string  `json:"title"`
-	Artist string  `json:"artist"`
-	Price  float64 `json:"price"`
-}
+// type album struct {
+// 	ID     uint    `gorm:"primary key;autoIncrement" json:"id"`
+// 	Title  string  `json:"title"`
+// 	Artist string  `json:"artist"`
+// 	Price  float64 `json:"price"`
+// }
 
-// albums slice to seed record album data.
-var albums = []album{
-	{ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
-	{ID: "2", Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
-	{ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
+// Our Repo
+type Repository struct {
+	DB *gorm.DB
 }
 
 func main() {
@@ -58,10 +59,10 @@ func main() {
 	if err != nil {
 		log.Fatal("could not migrate db")
 	}
-
-	//albumModel := &models.Albums{}
-	album1 := db.Where("id = ?", 2).First(&models.Albums{})
-	fmt.Println("first album", album1)
+	// Now R is our new repo
+	r := Repository{
+		DB: db,
+	}
 
 	// Logging to a file.
 	f, _ := os.Create("gin.log")
@@ -88,53 +89,88 @@ func main() {
 	router.GET("/", func(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{"Hello": "World"})
 	})
-	router.GET("/albums", getAlbums)
-	router.GET("/albums/:id", getAlbumByID)
-	router.POST("/albums", postAlbums)
+	router.GET("/albums", r.getAlbums)
+	router.GET("/albums/:id", r.getAlbumByID)
+	router.POST("/albums", r.createAlbum)
 
 	//router.Use(cors.Default())
 	router.Run("localhost:8080")
 }
 
 // getAlbums responds with the list of all albums as JSON.
-func getAlbums(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, albums)
+func (r *Repository) getAlbums(c *gin.Context) {
+	albumModels := &[]models.Album{}
+
+	err := r.DB.Find(albumModels).Error
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "album not found"})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{
+		"message": "album fetched successfully",
+		"data":    albumModels,
+	})
 }
 
-// postAlbums adds an album from JSON received in the request body.
-func postAlbums(c *gin.Context) {
-	var newAlbum album
+// createAlbum adds an album from JSON received in the request body.
+func (r *Repository) createAlbum(c *gin.Context) {
+	var newAlbum models.Album
 
-	// Call BindJSON to bind the received JSON to
-	// newAlbum.
+	// Call BindJSON to bind the received JSON to newAlbum.
 	if err := c.BindJSON(&newAlbum); err != nil {
 		return
 	}
 
-	// Checking that the title doesn't already exist
-	fmt.Println(newAlbum)
-	// Adding id
-	newAlbum.ID = strconv.Itoa(len(albums) + 1)
+	// Checking that the title doesn't already exist, don't need yet
+	fmt.Printf("This is the new album before adding: %+v\n", newAlbum)
 
-	// Add the new album to the slice.
-	albums = append(albums, newAlbum)
-	c.IndentedJSON(http.StatusCreated, newAlbum)
+	// Add the new album to the database.
+	//albums = append(albums, newAlbum)
+	err := r.DB.Create(&newAlbum).Error
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"message": "Could not create album",
+		})
+		return
+	}
+	c.IndentedJSON(http.StatusCreated, gin.H{
+		"message": "Album Created Successfully",
+		"data":    newAlbum,
+	})
 }
 
 // getAlbumByID locates the album whose ID value matches the id
 // parameter sent by the client, then returns that album as a response.
-func getAlbumByID(c *gin.Context) {
+func (r *Repository) getAlbumByID(c *gin.Context) {
 	id := c.Param("id")
+	albumModel := &models.Album{}
 
+	if id == "" {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"message": "id cannot be empty",
+		})
+		return
+	}
+
+	err := r.DB.Where("id = ?", id).First(albumModel).Error
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{
+		"message": "book fetched successfully",
+		"data":    albumModel,
+	})
 	// Loop over the list of albums, looking for
 	// an album whose ID value matches the parameter.
-	for _, a := range albums {
-		if a.ID == id {
-			c.IndentedJSON(http.StatusOK, a)
-			return
-		}
-	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
+	// for _, a := range albums {
+	// 	if a.ID == id {
+	// 		c.IndentedJSON(http.StatusOK, a)
+	// 		return
+	// 	}
+	// }
 }
 
 // Custom formatter to be passed in as m iddleware
