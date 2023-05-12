@@ -27,6 +27,17 @@ class ApiClient extends HttpClient {
             get: () => this.get("/albums")
         }
     }
+
+		/**
+		 * delete deleteAlbumByID will delete an album by its ID (soft delete).
+		 * 
+		 */
+    get deleteAlbumByID() {
+
+        return {
+            delete: (albumID: Number) => this.delete(`/albums/${albumID}`)
+        }
+    }
     
 
 		/**

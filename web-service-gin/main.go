@@ -78,7 +78,7 @@ func main() {
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
-		AllowMethods:     []string{"PUT", "GET", "OPTIONS", "POST"},
+		AllowMethods:     []string{"PUT", "GET", "OPTIONS", "POST", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"},
 		ExposeHeaders:    []string{"Content-Length", "Content-Type", "Accept", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"},
 		AllowCredentials: true,
@@ -92,6 +92,7 @@ func main() {
 	router.GET("/albums", r.getAlbums)
 	router.GET("/albums/:id", r.getAlbumByID)
 	router.POST("/albums", r.createAlbum)
+	router.DELETE("/albums/:id", r.deleteAlbumByID)
 
 	//router.Use(cors.Default())
 	router.Run("localhost:8080")
@@ -103,12 +104,12 @@ func (r *Repository) getAlbums(c *gin.Context) {
 
 	err := r.DB.Find(albumModels).Error
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "album not found"})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Album Not Found"})
 		return
 	}
 
 	c.IndentedJSON(http.StatusOK, gin.H{
-		"message": "album fetched successfully",
+		"message": "Album Fetched Successfully",
 		"data":    albumModels,
 	})
 }
@@ -130,7 +131,7 @@ func (r *Repository) createAlbum(c *gin.Context) {
 	err := r.DB.Create(&newAlbum).Error
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{
-			"message": "Could not create album",
+			"message": "Could not Create Album",
 		})
 		return
 	}
@@ -148,19 +149,19 @@ func (r *Repository) getAlbumByID(c *gin.Context) {
 
 	if id == "" {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{
-			"message": "id cannot be empty",
+			"message": "ID Cannot Be Empty",
 		})
 		return
 	}
 
 	err := r.DB.Where("id = ?", id).First(albumModel).Error
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Album Not Found"})
 		return
 	}
 
 	c.IndentedJSON(http.StatusOK, gin.H{
-		"message": "book fetched successfully",
+		"message": "Album Fetched Successfully",
 		"data":    albumModel,
 	})
 	// Loop over the list of albums, looking for
@@ -171,6 +172,31 @@ func (r *Repository) getAlbumByID(c *gin.Context) {
 	// 		return
 	// 	}
 	// }
+}
+
+/*
+delelteAlbumByID will take the album ID as a parameter and delete the
+album in the database, (soft delete) only setting the deletedAt parameter.
+*/
+func (r *Repository) deleteAlbumByID(c *gin.Context) {
+	id := c.Param("id")
+
+	if id == "" {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"message": "id cannot be empty",
+		})
+		return
+	}
+
+	err := r.DB.Delete(&models.Album{}, id).Error
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Album Not Found"})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{
+		"message": "Album Deleted Successfully",
+	})
 }
 
 // Custom formatter to be passed in as m iddleware

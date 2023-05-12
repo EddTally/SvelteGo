@@ -13,5 +13,7 @@ In a seperate terminal run this to start the website
 > npm install  
 > npm run dev  
 
+You'll need a postgres database and to set the environment variables in a .env file in web-service-gin.
+
 Current problem:  
-- Cors!
+- None!

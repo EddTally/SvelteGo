@@ -9,20 +9,23 @@
 
 	// New album has no id, remember that
 	let newAlbum = {title: "", artist: "", price: 0}
-	let chosenAlbum = {id: "0", title: "", artist: "", price: 0}
+	let chosenAlbum = {id: 0, title: "", artist: "", price: 0}
 	let getAlbumByIDUsed = false
-	let albumMessage = "Album Found"
-	let createAlbumMessage = ""
+	let message = ""
 	let chosenAlbumID = 0
+	// Idk what this type means
+	let messageTimeout: ReturnType<typeof setTimeout> = setTimeout(() => '', 1000);
 
 	async function addAlbum(){
+		clearTimeout(messageTimeout)
 		await apiClient.addAlbum
 		.post(newAlbum)
     .then((res) => res ? res.json() : false)
 		.then(res => {
 			if(res){
 				data.albums = [...data.albums, res.data]
-				createAlbumMessage = res.message
+				message = res.message
+				messageTimeout = setTimeout(() => message="", 2000)
 			}
 		})
 		.catch((err) => {
@@ -31,20 +34,38 @@
 	}
 
 	async function getAlbumByID(){
+		clearTimeout(messageTimeout)
 		await apiClient.getAlbumByID
 		.get(chosenAlbumID)
     .then((res) => res?.json())
 		.then(res => {
 			console.log(res.data)
 			chosenAlbum = res.data
-			albumMessage = "Album Found"
+			message = res.message
 			getAlbumByIDUsed = true
+			messageTimeout = setTimeout(() => message = "", 2000)
 		})
 		.catch((err) => {
-      console.error(err);
-			albumMessage = "Album Not Found"
+			message = err.message
 			getAlbumByIDUsed = true
+			messageTimeout = setTimeout(() => message = "", 2000)
     });
+	}
+
+	async function deleteAlbumByID(albumID: Number){
+		clearTimeout(messageTimeout)
+		await apiClient.deleteAlbumByID
+		.delete(albumID)
+		.then(res => res?.json())
+		.then(res => {
+			message = res?.message ? res.message : "Album Successfully Deleted" 
+			data.albums = data.albums.filter(album => album.id != albumID)
+			messageTimeout = setTimeout(() => message = "", 2000)
+		})
+		.catch(res => {
+			message = res?.message ? res.message : "Album Deletion Failed"
+			messageTimeout = setTimeout(() => message = "", 2000)
+		})
 	}
   
 
@@ -52,13 +73,29 @@
 
 <main>
 	<h1 style="title is-1">Welcome to SvelteKit</h1>
-	<h2> Lets see if we can display our go albums here </h2>
+	{#if message.length > 0}
+		<div class="block" id="message-display">
+  		<span class="notification is-info" >
+				{message}
+  		  <button class="delete is-small" on:click={() =>	{
+					clearTimeout(messageTimeout) 
+					message = ""
+					}}></button>
+  		</span>
+		</div>
+	{/if}
 	<!-- <button class="button" on:click={getAlbums}>Get Albums</button> -->
   	<!-- <button class="button" on:click={getDefault}>Get Default</button> -->
 		<div class="album-list">
 			{#each data.albums as album}
 				<Card>
 					<div class="album">
+						<div class="delete-button">
+							<button 
+							class="delete" 
+							on:click={() => deleteAlbumByID(album.id)}
+							/>
+						</div>
 						<div class="album-keys">
 							Album ID:  <br>
 							Title:  <br>
@@ -105,15 +142,9 @@
 			<label>
 				<button class="button" on:click={addAlbum}> Add Album </button>
 			</label>
-			{#if createAlbumMessage.length > 0}
-				<p>{createAlbumMessage} </p>
-			{/if}
 		</form>
 
 		<form>
-			{#if getAlbumByIDUsed}
-				<p> {albumMessage} </p>
-			{/if}
 			<label>
 				<b> Select Album ID </b>
 				<input 
@@ -162,6 +193,11 @@
 	.album{
 		display: flex;
 		flex-direction: row;
+		padding-right: 15px;
+	}
+	.delete-button{
+		position: absolute;
+		right: 2%;
 	}
 	.album-values{
 		padding-left: 5px;
@@ -171,7 +207,11 @@
 		border: 1px red solid;
 		padding: 2px
 	}
-
+	#message-display{
+		position: absolute; 
+		right: 5%;
+		z-index: 3;
+	}
 
 	/* Style inputs */
   form {

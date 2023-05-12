@@ -1,7 +1,7 @@
 import ApiClient from '../queries';
 
 let albums = [
-		{id: "0", title: "Default Album", artist: "Default Artist", price: 69.420},	
+		{id: 0, title: "Default Album", artist: "Default Artist", price: 69.420},	
 ]
 const apiClient = new ApiClient();
 
