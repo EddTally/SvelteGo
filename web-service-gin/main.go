@@ -3,13 +3,16 @@ package main
 import (
 	"example/web-service-gin/models"
 	"example/web-service-gin/storage"
+	"flag"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"time"
 
 	"os"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -35,12 +38,24 @@ type Repository struct {
 }
 
 func main() {
+	debug := flag.Bool("debug", false, "sets log level to debug")
+	flag.Parse()
+
+	log.Logger = log.With().Str("service", "album-server").Logger()
+	if *debug {
+		log.Logger = log.Logger.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+		log.Debug().Msg("Debug log level set")
+	}
 
 	// Loading env variables
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().
+			Err(err).
+			Msgf("Cannot find environment variables from .env")
 	}
+
+
 
 	config := &storage.Config{
 		Host:     os.Getenv("DB_HOST"),
@@ -53,11 +68,15 @@ func main() {
 
 	db, err := storage.NewConnection(config)
 	if err != nil {
-		log.Fatal("could not load the database")
+		log.Fatal().
+			Err(err).
+			Msgf("could not load the database")
 	}
 	err = models.MigrateAlbums(db)
 	if err != nil {
-		log.Fatal("could not migrate db")
+		log.Fatal().
+			Err(err).
+			Msgf("could not migrate db")
 	}
 	// Now R is our new repo
 	r := Repository{
